@@ -53,6 +53,7 @@ runs:
       shell: bash
       run: |
         type -p emacs
+        which emacs
         emacs --version
         echo "***foo"
         mkdir -p ${{ steps.get-cache-key-and-path.outputs.path }}
