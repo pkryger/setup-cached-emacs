@@ -1,0 +1,130 @@
+#+STARTUP: showeverything
+#+STARTUP: literallinks
+#+OPTIONS: toc:nil num:nil author:nil
+* Setup Cached Emacs
+:PROPERTIES:
+:CUSTOM_ID: setup-cached-emacs
+:END:
+
+A GitHub Action to install and cache Emacs. This action extends the
+functionality of
+[[https://github.com/purcell/setup-emacs][purcell/setup-emacs]] adding
+intelligent caching with intention of speeding up subsequent workflow runs.
+
+The implementation follows a work by Shawn Hoover, as described
+[[https://www.shawnhoover.dev/notes/caching-emacs-binaries-in-github-workflows.html][here]].
+
+* Basic Usage
+:PROPERTIES:
+:CUSTOM_ID: basic-usage
+:END:
+
+This action is meant to replace
+[[https://github.com/purcell/setup-emacs][purcell/setup-emacs]] (it actually
+calls it internally). The recommended usage is relatively simple:
+
+#+BEGIN_SRC yaml
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs-version:
+          - 30.1
+          - snapshot
+          - release-snapshot
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup cached Emacs
+      uses: pkryger/setup-cached-emacs@main
+      id: setup-cached-emacs
+      with:
+        emacs-version: {{ matrix.emacs-version}}
+
+#+END_SRC
+
+** Basic Usage Notes
+:PROPERTIES:
+:CUSTOM_ID: basic-usage-notes
+:END:
+- The =pkryger/setup-cached-emacs= action will not install =nix= in a case of a
+  cache miss. If any further steps in a workflow depends on =nix= being
+  installed. To stick to a similar method of installing =nix= as
+  [[https://github.com/purcell/setup-emacs][purcell/setup-emacs]] does, one can
+  use
+  [[https://github.com/cachix/install-nix-action][cachix/install-nix-action]]:
+  #+begin_src yaml
+    - name: Install nix
+      uses: cachix/install-nix-action@v31
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+      if: steps.setup-cached-emacs.outputs.cache-hit != 'true'
+  #+end_src
+
+* Inputs
+:PROPERTIES:
+:CUSTOM_ID: inputs
+:END:
+
+#+begin_src yaml
+inputs:
+  emacs-version:
+    description: >
+      The version of Emacs to create the cache for, for example: 30.1,
+      snapshot.  If the value is "snapshot" or "release-snapshot" then use
+      latest commit hash found in https://github.com/eamcs-mirror/emacs
+      repository on master or emacs-30 branch respectively.
+    required: true
+
+#+end_src
+
+
+* Outputs
+:PROPERTIES:
+:CUSTOM_ID: outputs
+:END:
+
+#+begin_src yaml
+  key:
+    description: >
+      A key used for the created cache for Emacs.
+    value: ${{ steps.get-cache-key-and-path.outputs.key }}
+
+  cache-hit:
+    description: >
+      A boolean value to indicate an exact match was found for the primary key.
+    value: ${{ steps.cache-hit.outputs.cache-hit }}
+
+#+end_src
+
+** Contributing
+
+Contributions are welcome! Please feel free to:
+
+- Report bugs
+- Suggest new features
+- Submit pull requests
+- Improve documentation
+
+* License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+* Related Actions
+
+- [[https://github.com/actions/cache][actions/cache]] - The underlying caching mechanism
+- [[https://github.com/purcell/setup-emacs][purcell/setup-emacs]] - Setup Emacs for GitHub Actions
+- [[https://github.com/cachix/install-nix-action][cachix/install-nix-action]] - Install nix
+
+* Support
+
+If you encounter any issues or have questions:
+
+1. Check the [[https://github.com/pkryger/setup-cached-emacs/issues][Issues]] page
+2. Create a new issue with detailed information about your problem
+3. Include your workflow file and error messages when reporting bugs

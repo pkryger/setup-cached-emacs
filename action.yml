@@ -1,0 +1,78 @@
+name: 'Setup Cached Emacs'
+description: 'Setup cached Emacs for Github Actions workflow'
+
+inputs:
+  emacs-version:
+    description: >
+      The version of Emacs to create the cache for, for example: 30.1,
+      snapshot.  If the value is "snapshot" or "release-snapshot" then use
+      latest commit hash found in https://github.com/eamcs-mirror/emacs
+      repository on master or emacs-30 branch respectively.
+    required: true
+
+outputs:
+  key:
+    description: >
+      A key used for the created cache for Emacs.
+    value: ${{ steps.get-cache-key-and-path.outputs.key }}
+
+  cache-hit:
+    description: >
+      A boolean value to indicate an exact match was found for the primary key.
+    value: ${{ steps.cache-hit.outputs.cache-hit }}
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Get cache key
+      id: get-cache-key-and-path
+      shell: bash
+      run: |
+        echo "key=$(${{ github.action_path }}/get-cache-key-and-path.sh \
+                    ${{ runner.os }} ${{ inputs.emacs-version }})"      \
+            >> "$GITHUB_OUTPUT"
+        echo "path=${{ runner.temp }}/cached-emacs-${{ inputs.emacs-version }}" \
+            >> "$GITHUB_OUTPUT"
+
+    - name: Setup cache
+      id: cache-emacs
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.get-cache-key-and-path.outputs.path }}
+        key: ${{ steps.get-cache-key-and-path.outputs.key }}
+
+    - name: On miss - Install
+      if: steps.cache-emacs.outputs.cache-hit != 'true'
+      uses: purcell/setup-emacs@master
+      with:
+        version: ${{ inputs.emacs-version }}
+
+    - name: On miss - Put
+      if: steps.cache-emacs.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        type -p emacs
+        emacs --version
+        mkdir -p ${{ steps.get-cache-key-and-path.outputs.path }}
+        nix-store --query --requisites $(which emacs) \
+            | xargs -I {} rsync -av {} ${{ steps.get-cache-key-and-path.outputs.path }}
+
+    - name: On hit - Restore
+      if: steps.cache-emacs.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        sudo mkdir -p /nix/store
+        sudo ln -s ${{ steps.get-cache-key-and-path.outputs.path }}/* /nix/store/
+        emacs_store=$(find /nix/store                                       \
+                          -name "*-emacs-$(echo ${{ inputs.emacs-version }} \
+                                               | sed -e 's/\./-/g')")
+        test -x "${emacs_store}/bin/emacs"
+        echo "${emacs_store}/bin" >> "${GITHUB_PATH}"
+
+    - name: Set cache-hit
+      id: cache-hit
+      shell: bash
+      run: |
+        echo "cache-hit=${{ steps.cache-emacs.outputs.cache-hit }}" \
+            >> "$GITHUB_OUTPUT"
