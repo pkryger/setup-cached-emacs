@@ -29,8 +29,8 @@ runs:
       id: get-cache-key-and-path
       shell: bash
       run: |
-        echo "key=$(${{ github.action_path }}/get-cache-key-and-path.sh \
-                    ${{ runner.os }} ${{ inputs.emacs-version }})"      \
+        echo "key=$(${{ github.action_path }}/get-cache-key.sh      \
+                    ${{ runner.os }} ${{ inputs.emacs-version }})"  \
             >> "$GITHUB_OUTPUT"
         echo "path=${{ runner.temp }}/cached-emacs-${{ inputs.emacs-version }}" \
             >> "$GITHUB_OUTPUT"
