@@ -54,8 +54,11 @@ runs:
       run: |
         type -p emacs
         emacs --version
+        echo "***foo"
         mkdir -p ${{ steps.get-cache-key-and-path.outputs.path }}
-        nix-store --query --requisites $(which emacs) \
+        echo "***bar"
+        nix-store --query --requisites $(which emacs)
+        nix-store --query --requisites $(which emacs)                                   \
             | xargs -I {} rsync -av {} ${{ steps.get-cache-key-and-path.outputs.path }}
 
     - name: On hit - Restore
