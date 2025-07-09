@@ -57,8 +57,15 @@ runs:
         emacs --version
         echo "***foo"
         mkdir -p ${{ steps.get-cache-key-and-path.outputs.path }}
+        echo "***foo-2"
+        ls -hlrt /home/runner/.nix-profile/bin
+        echo "***foo-3"
+        ls -hlrt $(dirname $(realpath $(which emacs))
         echo "***bar"
+        nix-store --query --requisites $(type -p emacs)
+        echo "** baz"
         nix-store --query --requisites $(which emacs)
+        echo "** qux"
         nix-store --query --requisites $(which emacs)                                   \
             | xargs -I {} rsync -av {} ${{ steps.get-cache-key-and-path.outputs.path }}
 
