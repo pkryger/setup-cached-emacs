@@ -1,0 +1,26 @@
+name: difftastic.el - CI Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths-ignore:
+    - '**.md'
+    - '.gitignore'
+  push:
+    paths-ignore:
+    - '**.md'
+    - '.gitignore'
+  schedule:
+    - cron:  '42 7 * * SUN,MON,WED,FRI,SAT'
+
+permissions:
+  checks: write
+
+jobs:
+  ci-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: pkryger/setup-cached-emacs@dev
+      id: setup-cached-emacs
+      with:
+        emacs-version: 28.2
