@@ -60,7 +60,7 @@ runs:
         echo "***foo-2"
         ls -hlrt /home/runner/.nix-profile/bin
         echo "***foo-3"
-        ls -hlrt $(dirname $(realpath $(which emacs))
+        ls -hlrt $(dirname $(realpath $(which emacs)))
         echo "***bar"
         nix-store --query --requisites $(type -p emacs)
         echo "** baz"
