@@ -55,7 +55,7 @@ runs:
         nix profile install                                                         \
             --accept-flake-config                                                   \
             github:purcell/nix-emacs-ci#emacs-$(echo ${{ inputs.emacs-version }}    \
-                                                    | sed -e 's/\./-/g')")
+                                                    | sed -e 's/\./-/g')
 
     - name: On miss - Put
       if: steps.cache-emacs.outputs.cache-hit != 'true'
