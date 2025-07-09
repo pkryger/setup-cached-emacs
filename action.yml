@@ -57,10 +57,16 @@ runs:
         emacs --version
         echo "***foo"
         mkdir -p ${{ steps.get-cache-key-and-path.outputs.path }}
-        echo "***foo-2"
+        echo "***foo: ls -hlrt /home/runner/.nix-profile/bin"
         ls -hlrt /home/runner/.nix-profile/bin
-        echo "***foo-3"
+        echo "***foo: ls -hlrt /home/runner/.nix-profile/bin/"
+        ls -hlrt /home/runner/.nix-profile/bin/
+        echo "***foo: dirname $(realpath $(which emacs))"
+        dirname $(realpath $(which emacs))
+        echo "***foo: ls -hlrt $(dirname $(realpath $(which emacs)))"
         ls -hlrt $(dirname $(realpath $(which emacs)))
+        echo "***foo: ls -hlrt $(dirname $(realpath $(which emacs)))/"
+        ls -hlrt $(dirname $(realpath $(which emacs)))/
         echo "***bar"
         nix-store --query --requisites $(type -p emacs)
         echo "** baz"
