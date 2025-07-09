@@ -48,14 +48,6 @@ runs:
       with:
         nix_path: nixpkgs=channel:nixos-unstable
 
-    - name: Debug 1
-      shell: bash
-      run: |
-        ls -ld /home/runner/.nix-profile
-        ls -ld $(realpath /home/runner/.nix-profile)
-        ls -hlrt /home/runner/.nix-profile/
-        ls -hlrt /home/runner/.nix-profile/bin
-
     - name: On miss - Install Emacs
       if: steps.cache-emacs.outputs.cache-hit != 'true'
       shell: bash
