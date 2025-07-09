@@ -42,11 +42,20 @@ runs:
         path: ${{ steps.get-cache-key-and-path.outputs.path }}
         key: ${{ steps.get-cache-key-and-path.outputs.key }}
 
-    - name: On miss - Install
+    - name: On miss - Install Nix
       if: steps.cache-emacs.outputs.cache-hit != 'true'
-      uses: purcell/setup-emacs@master
+      uses: cachix/install-nix-action@v31
       with:
-        version: ${{ inputs.emacs-version }}
+        nix_path: nixpkgs=channel:nixos-unstable
+
+    - name: On miss - Install Emacs
+      if: steps.cache-emacs.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        nix profile install                                                         \
+            --accept-flake-config                                                   \
+            github:purcell/nix-emacs-ci#emacs-$(echo ${{ inputs.emacs-version }}    \
+                                                    | sed -e 's/\./-/g')")
 
     - name: On miss - Put
       if: steps.cache-emacs.outputs.cache-hit != 'true'
